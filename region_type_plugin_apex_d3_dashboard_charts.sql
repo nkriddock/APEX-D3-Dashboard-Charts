@@ -170,89 +170,7 @@ wwv_flow_api.create_plugin(
 'https://apex.oracle.com/pls/apex/f?p=103428'))
 ,p_version_identifier=>'1.0.1'
 ,p_about_url=>'https://github.com/RonnyWeiss/APEX-D3-Dashboard-Charts'
-,p_plugin_comment=>wwv_flow_string.join(wwv_flow_t_varchar2(
-'License: ',
-'',
-'MIT License',
-'',
-'Copyright (c) 2019 Ronny Weiss',
-'',
-'Permission is hereby granted, free of charge, to any person obtaining a copy',
-'of this software and associated documentation files (the "Software"), to deal',
-'in the Software without restriction, including without limitation the rights',
-'to use, copy, modify, merge, publish, distribute, sublicense, and/or sell',
-'copies of the Software, and to permit persons to whom the Software is',
-'furnished to do so, subject to the following conditions:',
-'',
-'The above copyright notice and this permission notice shall be included in all',
-'copies or substantial portions of the Software.',
-'',
-'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR',
-'IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,',
-'FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE',
-'AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER',
-'LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,',
-'OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE',
-'SOFTWARE.',
-'',
-'the following libaries are used:',
-'',
-'License billboard.js - https://github.com/naver/billboard.js',
-'',
-'The MIT License (MIT)',
-'',
-'Copyright (c) 2017 ~ present NAVER Corp.',
-'Copyright (c) 2013 Masayuki Tanaka',
-'',
-'Permission is hereby granted, free of charge, to any person obtaining a copy of',
-'this software and associated documentation files (the "Software"), to deal in',
-'the Software without restriction, including without limitation the rights to',
-'use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of',
-'the Software, and to permit persons to whom the Software is furnished to do so,',
-'subject to the following conditions:',
-'',
-'The above copyright notice and this permission notice shall be included in all',
-'copies or substantial portions of the Software.',
-'',
-'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR',
-'IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS',
-'FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR',
-'COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER',
-'IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN',
-'CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
-'',
-'License d3.js - https://github.com/d3/d3',
-'',
-'BSD 3-Clause "New" or "Revised" License',
-'',
-'Copyright 2010-2017 Mike Bostock',
-'All rights reserved.',
-'',
-'Redistribution and use in source and binary forms, with or without modification,',
-'are permitted provided that the following conditions are met:',
-'',
-'* Redistributions of source code must retain the above copyright notice, this',
-'  list of conditions and the following disclaimer.',
-'',
-'* Redistributions in binary form must reproduce the above copyright notice,',
-'  this list of conditions and the following disclaimer in the documentation',
-'  and/or other materials provided with the distribution.',
-'',
-'* Neither the name of the author nor the names of contributors may be used to',
-'  endorse or promote products derived from this software without specific prior',
-'  written permission.',
-'',
-'THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND',
-'ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED',
-'WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE',
-'DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR',
-'ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES',
-'(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;',
-'LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON',
-'ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT',
-'(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS',
-'SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'))
-,p_files_version=>2053
+,p_files_version=>2055
 );
 wwv_flow_api.create_plugin_attribute(
  p_id=>wwv_flow_api.id(31801210468923221682)
@@ -5558,7 +5476,7 @@ wwv_flow_api.g_varchar2_table(7) := '776172652E0A0A54484520534F46545741524520495
 wwv_flow_api.g_varchar2_table(8) := '20425554204E4F54204C494D4954454420544F205448452057415252414E54494553204F46204D45524348414E544142494C4954592C0A4649544E45535320464F52204120504152544943554C415220505552504F534520414E44204E4F4E494E465249';
 wwv_flow_api.g_varchar2_table(9) := '4E47454D454E542E20494E204E4F204556454E54205348414C4C205448450A415554484F5253204F5220434F5059524947485420484F4C44455253204245204C4941424C4520464F5220414E5920434C41494D2C2044414D41474553204F52204F544845';
 wwv_flow_api.g_varchar2_table(10) := '520A4C494142494C4954592C205748455448455220494E20414E20414354494F4E204F4620434F4E54524143542C20544F5254204F52204F54484552574953452C2041524953494E472046524F4D2C0A4F5554204F46204F5220494E20434F4E4E454354';
-wwv_flow_api.g_varchar2_table(11) := '494F4E20574954482054484520534F465457415245204F522054484520555345204F52204F54484552204445414C494E475320494E205448450A534F4654574152452E';
+wwv_flow_api.g_varchar2_table(11) := '494F4E20574954482054484520534F465457415245204F522054484520555345204F52204F54484552204445414C494E475320494E205448450A534F4654574152452E0A';
 null;
 end;
 /
