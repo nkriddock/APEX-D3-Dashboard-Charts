@@ -13,7 +13,7 @@ All things such as chart type, number of series, colors, size, data points and c
 
 https://apex.oracle.com/pls/apex/f?p=103428
 
-NEW: Add News Themes to chart as Plug-in Setting:
+NEW: Add new Themes to chart as Plug-in Setting:
 
 ![Screenshot](https://github.com/RonnyWeiss/APEX-D3-Dashboard-Charts/blob/master/screenshot-themes.gif?raw=true)
 
