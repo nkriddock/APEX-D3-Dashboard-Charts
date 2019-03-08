@@ -5,7 +5,7 @@
  * billboard.js, JavaScript chart library
  * http://naver.github.io/billboard.js/
  * 
- * @version 1.7.1-nightly-20190223095404
+ * @version 1.7.1-nightly-20190308100115
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1280,7 +1280,7 @@ function () {
           newTickValues = tickValues;
       return $$.isTimeSeries() && tickValues && !isFunction(tickValues) && (newTickValues = tickValues.map(function (v) {
         return $$.parseDate(v);
-      })), axis.tickFormat(tickFormat).tickValues(newTickValues), isCategory && (axis.tickCentered(config.axis_x_tick_centered), isEmpty(config.axis_x_tick_culling) && (config.axis_x_tick_culling = !1)), axis;
+      })), axis.tickFormat(tickFormat).tickValues(newTickValues), isCategory && (axis.tickCentered(config.axis_x_tick_centered), isEmpty(config.axis_x_tick_culling) && (config.axis_x_tick_culling = !1)), config.axis_x_tick_count && axis.ticks(config.axis_x_tick_count), axis;
     } // called from : updateScales() & getMaxTickWidth()
 
   }, {
@@ -1307,11 +1307,12 @@ function () {
   }, {
     key: "updateXAxisTickValues",
     value: function updateXAxisTickValues(targets, axis) {
-      var tickValues,
+      var values,
           $$ = this.owner,
           config = $$.config,
-          xTickCount = config.axis_x_tick_count;
-      return (config.axis_x_tick_fit || xTickCount) && (tickValues = this.generateTickValues($$.mapTargetsToUniqueXs(targets), xTickCount, $$.isTimeSeries())), axis ? axis.tickValues(tickValues) : $$.xAxis && ($$.xAxis.tickValues(tickValues), $$.subXAxis.tickValues(tickValues)), tickValues;
+          fit = config.axis_x_tick_fit,
+          count = config.axis_x_tick_count;
+      return (fit || count && fit) && (values = this.generateTickValues($$.mapTargetsToUniqueXs(targets), count, $$.isTimeSeries())), axis ? axis.tickValues(values) : $$.xAxis && ($$.xAxis.tickValues(values), $$.subXAxis.tickValues(values)), values;
     }
   }, {
     key: "getId",
@@ -1707,11 +1708,16 @@ function () {
   }, {
     key: "initParams",
     value: function initParams() {
-      var $$ = this,
+      var _this = this,
+          $$ = this,
           config = $$.config,
           isRotated = config.axis_rotated;
-      $$.datetimeId = "bb-".concat(+new Date()), $$.clipId = "".concat($$.datetimeId, "-clip"), $$.clipIdForXAxis = "".concat($$.clipId, "-xaxis"), $$.clipIdForYAxis = "".concat($$.clipId, "-yaxis"), $$.clipIdForGrid = "".concat($$.clipId, "-grid"), $$.clipPath = $$.getClipPath($$.clipId), $$.clipPathForXAxis = $$.getClipPath($$.clipIdForXAxis), $$.clipPathForYAxis = $$.getClipPath($$.clipIdForYAxis), $$.clipPathForGrid = $$.getClipPath($$.clipIdForGrid), $$.dragStart = null, $$.dragging = !1, $$.flowing = !1, $$.cancelClick = !1, $$.mouseover = !1, $$.transiting = !1, $$.color = $$.generateColor(), $$.levelColor = $$.generateLevelColor(), $$.point = $$.generatePoint(), $$.extraLineClasses = $$.generateExtraLineClass(), $$.dataTimeFormat = config.data_xLocaltime ? external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["timeParse"] : external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["utcParse"], $$.axisTimeFormat = config.axis_x_localtime ? external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["timeFormat"] : external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["utcFormat"], $$.defaultAxisTimeFormat = function (d) {
-        var specifier = d.getMilliseconds() && ".%L" || d.getSeconds() && ".:%S" || d.getMinutes() && "%I:%M" || d.getHours() && "%I %p" || d.getDay() && d.getDate() !== 1 && "%-m/%-d" || d.getDate() !== 1 && "%b %d" || d.getMonth() && "%-m/%-d" || "%Y/%-m/%-d";
+
+      $$.datetimeId = "bb-".concat(+new Date()), $$.clipId = "".concat($$.datetimeId, "-clip"), $$.clipIdForXAxis = "".concat($$.clipId, "-xaxis"), $$.clipIdForYAxis = "".concat($$.clipId, "-yaxis"), $$.clipIdForGrid = "".concat($$.clipId, "-grid"), $$.clipPath = $$.getClipPath($$.clipId), $$.clipPathForXAxis = $$.getClipPath($$.clipIdForXAxis), $$.clipPathForYAxis = $$.getClipPath($$.clipIdForYAxis), $$.clipPathForGrid = $$.getClipPath($$.clipIdForGrid), $$.dragStart = null, $$.dragging = !1, $$.flowing = !1, $$.cancelClick = !1, $$.mouseover = !1, $$.transiting = !1, $$.color = $$.generateColor(), $$.levelColor = $$.generateLevelColor(), $$.point = $$.generatePoint(), $$.extraLineClasses = $$.generateExtraLineClass(), $$.dataTimeFormat = config.data_xLocaltime ? external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["timeParse"] : external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["utcParse"], $$.axisTimeFormat = config.axis_x_localtime ? external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["timeFormat"] : external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["utcFormat"];
+      var isDragZoom = $$.config.zoom_enabled && $$.config.zoom_enabled.type === "drag";
+      $$.defaultAxisTimeFormat = function (d) {
+        var isZoomed = isDragZoom ? _this.zoomScale : _this.zoomScale && $$.x.orgDomain().toString() !== _this.zoomScale.domain().toString(),
+            specifier = d.getMilliseconds() && ".%L" || d.getSeconds() && ".:%S" || d.getMinutes() && "%I:%M" || d.getHours() && "%I %p" || d.getDate() !== 1 && "%b %d" || isZoomed && d.getDate() === 1 && "%b\'%y" || d.getMonth() && "%-m/%-d" || "%Y";
         return $$.axisTimeFormat(specifier)(d);
       }, $$.hiddenTargetIds = [], $$.hiddenLegendIds = [], $$.focusedTargetIds = [], $$.defocusedTargetIds = [], $$.xOrient = isRotated ? "left" : "bottom", $$.yOrient = isRotated ? config.axis_y_inner ? "top" : "bottom" : config.axis_y_inner ? "right" : "left", $$.y2Orient = isRotated ? config.axis_y2_inner ? "bottom" : "top" : config.axis_y2_inner ? "left" : "right", $$.subXOrient = isRotated ? "left" : "bottom", $$.isLegendRight = config.legend_position === "right", $$.isLegendInset = config.legend_position === "inset", $$.isLegendTop = config.legend_inset_anchor === "top-left" || config.legend_inset_anchor === "top-right", $$.isLegendLeft = config.legend_inset_anchor === "top-left" || config.legend_inset_anchor === "bottom-left", $$.legendStep = 0, $$.legendItemWidth = 0, $$.legendItemHeight = 0, $$.currentMaxTickWidths = {
         x: {
@@ -1739,7 +1745,7 @@ function () {
         classname: "bb"
       };
 
-      if (isObject(config.bindto) && (bindto.element = config.bindto.element || "#chart", bindto.classname = config.bindto.classname || bindto.classname), $$.selectChart = isFunction(bindto.element.node) ? config.bindto.element : Object(external_commonjs_d3_selection_commonjs2_d3_selection_amd_d3_selection_root_d3_["select"])(bindto.element || []), $$.selectChart.empty() && ($$.selectChart = Object(external_commonjs_d3_selection_commonjs2_d3_selection_amd_d3_selection_root_d3_["select"])(document.body.appendChild(document.createElement("div")))), $$.selectChart.html("").classed(bindto.classname, !0), $$.data.xs = {}, $$.data.targets = $$.convertDataToTargets(data), config.data_filter && ($$.data.targets = $$.data.targets.filter(config.data_filter)), config.data_hide && $$.addHiddenTargetIds(config.data_hide === !0 ? $$.mapToIds($$.data.targets) : config.data_hide), config.legend_hide && $$.addHiddenLegendIds(config.legend_hide === !0 ? $$.mapToIds($$.data.targets) : config.legend_hide), $$.hasType("gauge") && (config.legend_show = !1), $$.updateSizes(), $$.updateScales(), $$.x && ($$.x.domain(sortValue($$.getXDomain($$.data.targets))), $$.subX.domain($$.x.domain()), $$.orgXDomain = $$.x.domain()), $$.y && ($$.y.domain($$.getYDomain($$.data.targets, "y")), $$.subY.domain($$.y.domain())), $$.y2 && ($$.y2.domain($$.getYDomain($$.data.targets, "y2")), $$.subY2 && $$.subY2.domain($$.y2.domain())), $$.svg = $$.selectChart.append("svg").style("overflow", "hidden").style("display", "block"), config.interaction_enabled && $$.inputType) {
+      if (isObject(config.bindto) && (bindto.element = config.bindto.element || "#chart", bindto.classname = config.bindto.classname || bindto.classname), $$.selectChart = isFunction(bindto.element.node) ? config.bindto.element : Object(external_commonjs_d3_selection_commonjs2_d3_selection_amd_d3_selection_root_d3_["select"])(bindto.element || []), $$.selectChart.empty() && ($$.selectChart = Object(external_commonjs_d3_selection_commonjs2_d3_selection_amd_d3_selection_root_d3_["select"])(document.body.appendChild(document.createElement("div")))), $$.selectChart.html("").classed(bindto.classname, !0), $$.data.xs = {}, $$.data.targets = $$.convertDataToTargets(data), config.data_filter && ($$.data.targets = $$.data.targets.filter(config.data_filter)), config.data_hide && $$.addHiddenTargetIds(config.data_hide === !0 ? $$.mapToIds($$.data.targets) : config.data_hide), config.legend_hide && $$.addHiddenLegendIds(config.legend_hide === !0 ? $$.mapToIds($$.data.targets) : config.legend_hide), $$.hasType("gauge") && (config.legend_show = !1), $$.updateSizes(), $$.updateScales(!0), $$.x && ($$.x.domain(sortValue($$.getXDomain($$.data.targets))), $$.subX.domain($$.x.domain()), $$.orgXDomain = $$.x.domain()), $$.y && ($$.y.domain($$.getYDomain($$.data.targets, "y")), $$.subY.domain($$.y.domain())), $$.y2 && ($$.y2.domain($$.getYDomain($$.data.targets, "y2")), $$.subY2 && $$.subY2.domain($$.y2.domain())), $$.svg = $$.selectChart.append("svg").style("overflow", "hidden").style("display", "block"), config.interaction_enabled && $$.inputType) {
         var isTouch = $$.inputType === "touch";
         $$.svg.on(isTouch ? "touchstart" : "mouseenter", function () {
           return callFn(config.onover, $$);
@@ -1978,8 +1984,8 @@ function () {
           break;
         }
 
-        $$.svg.selectAll(".".concat(config_classes.axisX, " .tick text")).each(function (e) {
-          var index = tickValues.indexOf(e);
+        $$.svg.selectAll(".".concat(config_classes.axisX, " .tick text")).each(function (d) {
+          var index = tickValues.indexOf(d);
           index >= 0 && Object(external_commonjs_d3_selection_commonjs2_d3_selection_amd_d3_selection_root_d3_["select"])(this).style("display", index % intervalForCulling ? "none" : "block");
         });
       } else $$.svg.selectAll(".".concat(config_classes.axisX, " .tick text")).style("display", "block"); // Update sub domain
@@ -2240,7 +2246,9 @@ function () {
       var $$ = this,
           config = $$.config;
       $$.resizeFunction = $$.generateResize(), $$.resizeFunction.add(config.onresize.bind($$)), config.resize_auto && $$.resizeFunction.add(function () {
-        $$.resizeTimeout && (window.clearTimeout($$.resizeTimeout), $$.resizeTimeout = null), $$.resizeTimeout = window.setTimeout($$.api.flush, 100);
+        $$.resizeTimeout && (window.clearTimeout($$.resizeTimeout), $$.resizeTimeout = null), $$.resizeTimeout = window.setTimeout(function () {
+          $$.api.flush(!1, !0);
+        }, 200);
       }), $$.resizeFunction.add(config.onresized.bind($$)), window.addEventListener("resize", $$.resizeFunction);
     }
   }, {
@@ -2534,8 +2542,8 @@ var Options_Options = function Options() {
      * @property {Boolean} [zoom.rescale=false] Enable to rescale after zooming.<br>
      *  If true set, y domain will be updated according to the zoomed region.
      * @property {Array} [zoom.extent=[1, 10]] Change zoom extent.
-     * @property {Number} [zoom.x.min] Set x Axis minimum zoom range
-     * @property {Number} [zoom.x.max] Set x Axis maximum zoom range
+     * @property {Number|Date} [zoom.x.min] Set x Axis minimum zoom range
+     * @property {Number|Date} [zoom.x.max] Set x Axis maximum zoom range
      * @property {Function} [zoom.onzoomstart=undefined] Set callback that is called when zooming starts.<br>
      *  Specified function receives the zoom event.
      * @property {Function} [zoom.onzoom=undefined] Set callback that is called when the chart is zooming.<br>
@@ -2776,7 +2784,7 @@ var Options_Options = function Options() {
      * data: {
               *   xFormat: "%Y-%m-%d %H:%M:%S"
      * }
-     * @see [D3's time specifier](https://npm.runkit.com/d3-time-format)
+     * @see [D3's time specifier](https://github.com/d3/d3-time-format#locale_format)
      */
     data_xFormat: "%Y-%m-%d",
 
@@ -3853,8 +3861,9 @@ var Options_Options = function Options() {
      * A function to format tick value. Format string is also available for timeseries data.
      * @name axis․x․tick․format
      * @memberof Options
-     * @type {Function}
+     * @type {Function|String}
      * @default undefined
+     * @see [D3's time specifier](https://github.com/d3/d3-time-format#locale_format)
      * @example
      * axis: {
      *   x: {
@@ -3867,7 +3876,10 @@ var Options_Options = function Options() {
      *       // for category, index(Number) and categoryName(String) are given as parameter
      *       format: function(index, categoryName) {
      *           return categoryName.substr(0, 10);
-     *       }
+     *       },
+     *
+     *        // for timeseries format specifier
+     *        format: "%Y-%m-%d %H:%M:%S"
      *     }
      *   }
      * }
@@ -3996,12 +4008,15 @@ var Options_Options = function Options() {
     },
 
     /**
-     * Fit x axis ticks.<br><br>
-     * If true set, the ticks will be positioned nicely. If false set, the ticks will be positioned according to x value of the data points.
+     * Fit x axis ticks.
+     * - **true**: ticks will be positioned nicely to have same intervals.
+     * - **false**: ticks will be positioned according to x value of the data points.
      * @name axis․x․tick․fit
      * @memberof Options
      * @type {Boolean}
      * @default true
+     * @see [Demo](https://naver.github.io/billboard.js/demo/#Axis.XAxisTickFitting)
+     * @see [Demo: for timeseries zoom](https://naver.github.io/billboard.js/demo/#Axis.XAxisTickTimeseries)
      * @example
      * axis: {
      *   x: {
@@ -5074,7 +5089,7 @@ var Options_Options = function Options() {
      * @property {Number|Function} [point.r=2.5] The radius size of each point.<br>
      *  - **NOTE:** Disabled for 'bubble' type
      * @property {Boolean} [point.focus.expand.enabled=true] Whether to expand each point on focus.
-     * @property {Boolean} [point.focus.expand.r=point.r*1.75] The radius size of each point on focus.<br>
+     * @property {Number} [point.focus.expand.r=point.r*1.75] The radius size of each point on focus.<br>
      *  - **NOTE:** For 'bubble' type, the default is `bubbleSize*1.15`
      * @property {Number} [point.select.r=point.r*4] The radius size of each point on selected.
      * @property {String} [point.type="circle"] The type of point to be drawn<br>
@@ -5265,15 +5280,49 @@ var Options_Options = function Options() {
      * @memberof Options
      * @type {Object}
      * @property {Boolean} [area.zerobased=true] Set if min or max value will be 0 on area chart.
-     * @property {Boolean} [area.above=false]
+     * @property {Boolean} [area.above=false] Set background area above the data chart line.
+     * @property {Boolean|Object} [area.linearGradient=false] Set the linear gradient on area.<br><br>
+     * Or customize by giving below object value:
+     *  - x {Array}: `x1`, `x2` value
+     *  - y {Array}: `y1`, `y2` value
+     *  - stops {Array}: Each item should be having `[offset, stop-color, stop-opacity]` values.
+     * @see [MDN's &lt;linearGradient>](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/linearGradient), [&lt;stop>](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/stop)
+     * @see [Demo](https://naver.github.io/billboard.js/demo/#Chart.AreaChart)
+     * @see [Demo: above](https://naver.github.io/billboard.js/demo/#AreaChartOptions.Above)
+     * @see [Demo: linearGradient](https://naver.github.io/billboard.js/demo/#AreaChartOptions.LinearGradient)
      * @example
      *  area: {
      *      zerobased: false,
-     *      above: true
+     *      above: true,
+     *
+     *      // will generate follwing linearGradient:
+     *      // <linearGradient x1="0" x2="0" y1="0" y2="1">
+     *      //    <stop offset="0" stop-color="$DATA_COLOR" stop-opacity="1"></stop>
+     *      //    <stop offset="1" stop-color="$DATA_COLOR" stop-opacity="0"></stop>
+     *      // </linearGradient>
+     *      linearGradient: true,
+     *
+     *      // Or customized gradient
+     *      linearGradient: {
+     *      	x: [0, 0],  // x1, x2 attributes
+     *      	y: [0, 0],  // y1, y2 attributes
+     *      	stops: [
+     *      		// offset, stop-color, stop-opacity
+     *      		[0, "#7cb5ec", 1],
+     *
+     *      		// setting 'null' for stop-color, will set its original data color
+     *      		[0.5, null, 0],
+     *
+     *      		// setting 'function' for stop-color, will pass data id as argument.
+     *      		// It should return color string or null value
+     *      		[1, function(id) { return id === "data1" ? "red" : "blue"; }, 0],
+     *      	]
+     *      }
      *  }
      */
     area_zerobased: !0,
     area_above: !1,
+    area_linearGradient: !1,
 
     /**
      * Set pie options
@@ -8227,15 +8276,37 @@ extend(ChartInternal_ChartInternal.prototype, {
 
     return path;
   },
+  updateAreaGradient: function updateAreaGradient() {
+    var $$ = this;
+    $$.data.targets.forEach(function (d) {
+      var color = $$.color(d),
+          _$$$config$area_linea = $$.config.area_linearGradient,
+          _$$$config$area_linea2 = _$$$config$area_linea.x,
+          x = _$$$config$area_linea2 === void 0 ? [0, 0] : _$$$config$area_linea2,
+          _$$$config$area_linea3 = _$$$config$area_linea.y,
+          y = _$$$config$area_linea3 === void 0 ? [0, 1] : _$$$config$area_linea3,
+          _$$$config$area_linea4 = _$$$config$area_linea.stops,
+          stops = _$$$config$area_linea4 === void 0 ? [[0, color, 1], [1, color, 0]] : _$$$config$area_linea4,
+          linearGradient = $$.defs.append("linearGradient").attr("id", "".concat($$.datetimeId, "-areaGradient-").concat(d.id)).attr("x1", x[0]).attr("x2", x[1]).attr("y1", y[0]).attr("y2", y[1]);
+      stops.forEach(function (v) {
+        var stopColor = isFunction(v[1]) ? v[1](d.id) : v[1];
+        linearGradient.append("stop").attr("offset", v[0]).attr("stop-color", stopColor || color).attr("stop-opacity", v[2]);
+      });
+    });
+  },
+  updateAreaColor: function updateAreaColor(d) {
+    var $$ = this;
+    return $$.config.area_linearGradient ? "url(#".concat($$.datetimeId, "-areaGradient-").concat(d.id, ")") : $$.color(d);
+  },
   updateArea: function updateArea(durationForExit) {
     var $$ = this;
-    $$.mainArea = $$.main.selectAll(".".concat(config_classes.areas)).selectAll(".".concat(config_classes.area)).data($$.lineData.bind($$)), $$.mainArea.exit().transition().duration(durationForExit).style("opacity", "0").remove(), $$.mainArea = $$.mainArea.enter().append("path").attr("class", $$.classArea.bind($$)).style("fill", $$.color).style("opacity", function () {
+    $$.config.area_linearGradient && !$$.mainArea && $$.updateAreaGradient(), $$.mainArea = $$.main.selectAll(".".concat(config_classes.areas)).selectAll(".".concat(config_classes.area)).data($$.lineData.bind($$)), $$.mainArea.exit().transition().duration(durationForExit).style("opacity", "0").remove(), $$.mainArea = $$.mainArea.enter().append("path").attr("class", $$.classArea.bind($$)).style("fill", $$.updateAreaColor.bind($$)).style("opacity", function () {
       return $$.orgAreaOpacity = Object(external_commonjs_d3_selection_commonjs2_d3_selection_amd_d3_selection_root_d3_["select"])(this).style("opacity"), "0";
     }).merge($$.mainArea), $$.mainArea.style("opacity", $$.orgAreaOpacity);
   },
   redrawArea: function redrawArea(drawArea, withTransition) {
     var $$ = this;
-    return [(withTransition ? this.mainArea.transition(getRandom()) : this.mainArea).attr("d", drawArea).style("fill", this.color).style("opacity", function (d) {
+    return [(withTransition ? $$.mainArea.transition(getRandom()) : $$.mainArea).attr("d", drawArea).style("fill", $$.updateAreaColor.bind($$)).style("opacity", function (d) {
       return $$.isAreaRangeType(d) ? $$.orgAreaOpacity / 1.75 : $$.orgAreaOpacity;
     })];
   },
@@ -9562,7 +9633,7 @@ extend(ChartInternal_ChartInternal.prototype, {
     };
     // Update size and scale
     // Update g positions
-    optionz.withTransition = getOption(optionz, "withTransition", !0), optionz.withTransitionForTransform = getOption(optionz, "withTransitionForTransform", !0), config.legend_contents_bindto && config.legend_contents_template ? $$.updateLegendTemplate() : $$.updateLegendElement(targetIds || $$.mapToIds($$.data.targets), optionz, transitions), $$.updateSizes(), $$.updateScales(!optionz.withTransition), $$.updateSvgSize(), $$.transformAll(optionz.withTransitionForTransform, transitions), $$.legendHasRendered = !0;
+    optionz.withTransition = getOption(optionz, "withTransition", !0), optionz.withTransitionForTransform = getOption(optionz, "withTransitionForTransform", !0), config.legend_contents_bindto && config.legend_contents_template ? $$.updateLegendTemplate() : $$.updateLegendElement(targetIds || $$.mapToIds($$.data.targets), optionz, transitions), $$.updateSizes(), $$.updateScales(), $$.updateSvgSize(), $$.transformAll(optionz.withTransitionForTransform, transitions), $$.legendHasRendered = !0;
   },
 
   /**
@@ -10424,14 +10495,26 @@ extend(ChartInternal_ChartInternal.prototype, {
     $$.brush = isRotated ? Object(external_commonjs_d3_brush_commonjs2_d3_brush_amd_d3_brush_root_d3_["brushY"])() : Object(external_commonjs_d3_brush_commonjs2_d3_brush_amd_d3_brush_root_d3_["brushX"])();
 
     // set "brush" event
-    var brushHandler = function () {
+    var lastDomain,
+        timeout,
+        brushHandler = function () {
       $$.redrawForBrush();
     };
 
     // set the brush extent
     $$.brush.on("start", function () {
       $$.inputType === "touch" && $$.hideTooltip(), brushHandler();
-    }).on("brush", brushHandler), $$.brush.update = function () {
+    }).on("brush", brushHandler).on("end", function () {
+      lastDomain = $$.x.orgDomain();
+    }), $$.brush.updateResize = function () {
+      var _this = this;
+
+      timeout && clearTimeout(timeout), timeout = setTimeout(function () {
+        var selection = _this.getSelection();
+
+        lastDomain && Object(external_commonjs_d3_brush_commonjs2_d3_brush_amd_d3_brush_root_d3_["brushSelection"])(selection.node()) && _this.move(selection, lastDomain.map($$.subX.orgScale()));
+      }, 0);
+    }, $$.brush.update = function () {
       var extent = this.extent()();
       return extent[1].filter(function (v) {
         return isNaN(v);
@@ -10588,15 +10671,14 @@ extend(ChartInternal_ChartInternal.prototype, {
    * @private
    */
   redrawForBrush: function redrawForBrush() {
-    var $$ = this,
-        x = $$.x;
+    var $$ = this;
     $$.redraw({
       withTransition: !1,
       withY: $$.config.zoom_rescale,
       withSubchart: !1,
       withUpdateXDomain: !0,
       withDimension: !1
-    }), $$.config.subchart_onbrush.call($$.api, x.orgDomain());
+    }), $$.config.subchart_onbrush.call($$.api, $$.x.orgDomain());
   },
 
   /**
@@ -12861,7 +12943,7 @@ extend(Chart_Chart.prototype, {
    */
   resize: function resize(size) {
     var config = this.internal.config;
-    config.size_width = size ? size.width : null, config.size_height = size ? size.height : null, this.flush();
+    config.size_width = size ? size.width : null, config.size_height = size ? size.height : null, this.flush(!1, !0);
   },
 
   /**
@@ -12870,16 +12952,17 @@ extend(Chart_Chart.prototype, {
    * @instance
    * @memberof Chart
    * @param {Boolean} [soft] For soft redraw.
+   * @param {Boolean} [isFromResize] For soft redraw.
    * @example
    * chart.flush();
    *
    * // for soft redraw
    * chart.flush(true);
    */
-  flush: function flush(soft) {
+  flush: function flush(soft, isFromResize) {
     var $$ = this.internal; // reset possible zoom scale
 
-    $$.zoomScale = null, soft ? $$.redraw({
+    isFromResize && $$.brush && $$.brush.updateResize(), $$.zoomScale = null, soft ? $$.redraw({
       withTransform: !0,
       withUpdateXDomain: !0,
       withUpdateOrgXDomain: !0,
@@ -13210,7 +13293,7 @@ var billboard = __webpack_require__(24);
 
 /**
  * @namespace bb
- * @version 1.7.1-nightly-20190223095404
+ * @version 1.7.1-nightly-20190308100115
  */
 
 var bb = {
@@ -13221,7 +13304,7 @@ var bb = {
    *    bb.version;  // "1.0.0"
    * @memberof bb
    */
-  version: "1.7.1-nightly-20190223095404",
+  version: "1.7.1-nightly-20190308100115",
 
   /**
    * Generate chart
