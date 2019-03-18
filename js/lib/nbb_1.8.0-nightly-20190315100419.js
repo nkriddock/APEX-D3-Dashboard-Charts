@@ -5,7 +5,7 @@
  * billboard.js, JavaScript chart library
  * http://naver.github.io/billboard.js/
  * 
- * @version 1.7.1-nightly-20190308100115
+ * @version 1.8.0-nightly-20190315100419
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -767,7 +767,7 @@ function () {
     classCallCheck_default()(this, AxisRendererHelper);
 
     var scale = Object(external_commonjs_d3_scale_commonjs2_d3_scale_amd_d3_scale_root_d3_["scaleLinear"])();
-    this.config = config, this.scale = scale, params.config.transition_duration || (config.noTransition = !0), config.range = scale.rangeExtent ? scale.rangeExtent() : this.scaleExtent((params.orgXScale || scale).range());
+    this.config = config, this.scale = scale, (config.noTransition || !params.config.transition_duration) && (config.withoutTransition = !0), config.range = scale.rangeExtent ? scale.rangeExtent() : this.scaleExtent((params.orgXScale || scale).range());
   }
   /**
    * Compute a character dimension
@@ -834,7 +834,7 @@ function () {
     key: "transitionise",
     value: function transitionise(selection) {
       var config = this.config;
-      return config.noTransition ? selection.interrupt() : selection.transition(config.transition);
+      return config.withoutTransition ? selection.interrupt() : selection.transition(config.transition);
     }
   }], [{
     key: "getSizeFor1Char",
@@ -1191,7 +1191,7 @@ var Axis_Axis =
 /*#__PURE__*/
 function () {
   function Axis(owner) {
-    classCallCheck_default()(this, Axis), this.owner = owner;
+    classCallCheck_default()(this, Axis), this.owner = owner, this.setOrient();
   }
 
   return createClass_default()(Axis, [{
@@ -1212,6 +1212,21 @@ function () {
           return v === "x" ? res = $$.clipPathForXAxis : v === "y" && config.axis_y_inner && (res = $$.clipPathForYAxis), res;
         }).attr("transform", $$.getTranslate(v)).style("visibility", config["axis_".concat(v, "_show")] ? "visible" : "hidden"), $$.axes[v].append("text").attr("class", classLabel).attr("transform", ["rotate(-90)", null][v === "x" ? +!isRotated : +isRotated]).style("text-anchor", _this.textAnchorForXAxisLabel.bind(_this)), _this.generateAxes(v);
       });
+    }
+    /**
+     * Set axis orient according option value
+     * @private
+     */
+
+  }, {
+    key: "setOrient",
+    value: function setOrient() {
+      var $$ = this.owner,
+          config = $$.config,
+          isRotated = config.axis_rotated,
+          yInner = config.axis_y_inner,
+          y2Inner = config.axis_y2_inner;
+      $$.xOrient = isRotated ? "left" : "bottom", $$.yOrient = isRotated ? yInner ? "top" : "bottom" : yInner ? "right" : "left", $$.y2Orient = isRotated ? y2Inner ? "bottom" : "top" : y2Inner ? "left" : "right", $$.subXOrient = isRotated ? "left" : "bottom";
     }
     /**
      * Generate axes
@@ -1545,7 +1560,7 @@ function () {
         // do not compute if domain is same
         if (currentTickMax.domain === domain) return currentTickMax.size;
         currentTickMax.domain = domain;
-        var axis = this["".concat(getFrom, "Axis")](id, scale, !1, !0, !0);
+        var axis = this["".concat(getFrom, "Axis")](id, scale, !1, !1, !0);
         isYAxis || this.updateXAxisTickValues(targetsToShow, axis);
         var dummy = $$.selectChart.append("svg").style("visibility", "hidden").style("position", "fixed").style("top", "0px").style("left", "0px");
         axis.create(dummy), dummy.selectAll("text").each(function () {
@@ -1636,12 +1651,12 @@ function () {
     }
   }, {
     key: "redraw",
-    value: function redraw(transitions, isHidden) {
+    value: function redraw(transitions, isHidden, isInit) {
       var $$ = this.owner,
           opacity = isHidden ? "0" : "1";
       ["x", "y", "y2", "subX"].forEach(function (id) {
         var axis = $$["".concat(id, "Axis")];
-        axis && ($$.axes[id.toLowerCase()].style("opacity", opacity), axis.create(transitions["axis".concat(capitalize(id))]));
+        axis && (!isInit && (axis.config.withoutTransition = !$$.config.transition_duration), $$.axes[id.toLowerCase()].style("opacity", opacity), axis.create(transitions["axis".concat(capitalize(id))]));
       }), this.updateAxes();
     }
   }]), Axis;
@@ -1699,10 +1714,9 @@ function () {
   }, {
     key: "init",
     value: function init() {
-      var convertedData,
-          $$ = this,
-          config = $$.config;
-      if ($$.initParams(), config.data_url) $$.convertUrlToData(config.data_url, config.data_mimeType, config.data_headers, config.data_keys, $$.initWithData);else if (config.data_json) convertedData = $$.convertJsonToData(config.data_json, config.data_keys);else if (config.data_rows) convertedData = $$.convertRowsToData(config.data_rows);else if (config.data_columns) convertedData = $$.convertColumnsToData(config.data_columns);else throw Error("url or json or rows or columns is required.");
+      var $$ = this;
+      $$.initParams();
+      var convertedData = $$.convertData($$.config, $$.initWithData);
       convertedData && $$.initWithData(convertedData);
     }
   }, {
@@ -1713,13 +1727,13 @@ function () {
           config = $$.config,
           isRotated = config.axis_rotated;
 
-      $$.datetimeId = "bb-".concat(+new Date()), $$.clipId = "".concat($$.datetimeId, "-clip"), $$.clipIdForXAxis = "".concat($$.clipId, "-xaxis"), $$.clipIdForYAxis = "".concat($$.clipId, "-yaxis"), $$.clipIdForGrid = "".concat($$.clipId, "-grid"), $$.clipPath = $$.getClipPath($$.clipId), $$.clipPathForXAxis = $$.getClipPath($$.clipIdForXAxis), $$.clipPathForYAxis = $$.getClipPath($$.clipIdForYAxis), $$.clipPathForGrid = $$.getClipPath($$.clipIdForGrid), $$.dragStart = null, $$.dragging = !1, $$.flowing = !1, $$.cancelClick = !1, $$.mouseover = !1, $$.transiting = !1, $$.color = $$.generateColor(), $$.levelColor = $$.generateLevelColor(), $$.point = $$.generatePoint(), $$.extraLineClasses = $$.generateExtraLineClass(), $$.dataTimeFormat = config.data_xLocaltime ? external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["timeParse"] : external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["utcParse"], $$.axisTimeFormat = config.axis_x_localtime ? external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["timeFormat"] : external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["utcFormat"];
+      $$.datetimeId = "bb-".concat(+new Date()), $$.initClip(), $$.dragStart = null, $$.dragging = !1, $$.flowing = !1, $$.cancelClick = !1, $$.mouseover = !1, $$.transiting = !1, $$.color = $$.generateColor(), $$.levelColor = $$.generateLevelColor(), $$.point = $$.generatePoint(), $$.extraLineClasses = $$.generateExtraLineClass(), $$.dataTimeFormat = config.data_xLocaltime ? external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["timeParse"] : external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["utcParse"], $$.axisTimeFormat = config.axis_x_localtime ? external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["timeFormat"] : external_commonjs_d3_time_format_commonjs2_d3_time_format_amd_d3_time_format_root_d3_["utcFormat"];
       var isDragZoom = $$.config.zoom_enabled && $$.config.zoom_enabled.type === "drag";
       $$.defaultAxisTimeFormat = function (d) {
         var isZoomed = isDragZoom ? _this.zoomScale : _this.zoomScale && $$.x.orgDomain().toString() !== _this.zoomScale.domain().toString(),
             specifier = d.getMilliseconds() && ".%L" || d.getSeconds() && ".:%S" || d.getMinutes() && "%I:%M" || d.getHours() && "%I %p" || d.getDate() !== 1 && "%b %d" || isZoomed && d.getDate() === 1 && "%b\'%y" || d.getMonth() && "%-m/%-d" || "%Y";
         return $$.axisTimeFormat(specifier)(d);
-      }, $$.hiddenTargetIds = [], $$.hiddenLegendIds = [], $$.focusedTargetIds = [], $$.defocusedTargetIds = [], $$.xOrient = isRotated ? "left" : "bottom", $$.yOrient = isRotated ? config.axis_y_inner ? "top" : "bottom" : config.axis_y_inner ? "right" : "left", $$.y2Orient = isRotated ? config.axis_y2_inner ? "bottom" : "top" : config.axis_y2_inner ? "left" : "right", $$.subXOrient = isRotated ? "left" : "bottom", $$.isLegendRight = config.legend_position === "right", $$.isLegendInset = config.legend_position === "inset", $$.isLegendTop = config.legend_inset_anchor === "top-left" || config.legend_inset_anchor === "top-right", $$.isLegendLeft = config.legend_inset_anchor === "top-left" || config.legend_inset_anchor === "bottom-left", $$.legendStep = 0, $$.legendItemWidth = 0, $$.legendItemHeight = 0, $$.currentMaxTickWidths = {
+      }, $$.hiddenTargetIds = [], $$.hiddenLegendIds = [], $$.focusedTargetIds = [], $$.defocusedTargetIds = [], $$.isLegendRight = config.legend_position === "right", $$.isLegendInset = config.legend_position === "inset", $$.isLegendTop = config.legend_inset_anchor === "top-left" || config.legend_inset_anchor === "top-right", $$.isLegendLeft = config.legend_inset_anchor === "top-left" || config.legend_inset_anchor === "bottom-left", $$.legendStep = 0, $$.legendItemWidth = 0, $$.legendItemHeight = 0, $$.currentMaxTickWidths = {
         x: {
           size: 0,
           domain: ""
@@ -1739,7 +1753,7 @@ function () {
     value: function initWithData(data) {
       var $$ = this,
           config = $$.config;
-      $$.axis = new Axis_Axis($$), config.zoom_enabled && ($$.initZoom(), $$.initZoomBehaviour());
+      $$.axis = new Axis_Axis($$), config.zoom_enabled && $$.initZoom();
       var bindto = {
         element: config.bindto,
         classname: "bb"
@@ -1764,7 +1778,7 @@ function () {
 
       // data.onmin/max callback
       if ($$.main = main, config.subchart_show && $$.initSubchart(), $$.initTooltip && $$.initTooltip(), $$.initLegend && $$.initLegend(), $$.initTitle && $$.initTitle(), config.data_empty_label_text && main.append("text").attr("class", "".concat(config_classes.text, " ").concat(config_classes.empty)).attr("text-anchor", "middle") // horizontal centering of text at x position in all browsers.
-      .attr("dominant-baseline", "middle"), $$.initRegion(), config.clipPath || $$.axis.init(), main.append("g").attr("class", config_classes.chart).attr("clip-path", $$.clipPath), $$.initEventRect(), $$.initChartElements(), $$.initGrid(), main.insert("rect", config.zoom_privileged ? null : "g.".concat(config_classes.regions)).attr("class", config_classes.zoomRect).attr("width", $$.width).attr("height", $$.height).style("opacity", "0").on("dblclick.zoom", null), config.axis_x_extent && $$.brush.scale($$.getDefaultExtent()), config.clipPath && $$.axis.init(), $$.updateTargets($$.data.targets), $$.updateDimension(), config.oninit.call($$), $$.redraw({
+      .attr("dominant-baseline", "middle"), $$.initRegion(), config.clipPath || $$.axis.init(), main.append("g").attr("class", config_classes.chart).attr("clip-path", $$.clipPath), $$.initEventRect(), $$.initChartElements(), $$.initGrid(), main.insert("rect", config.zoom_privileged ? null : "g.".concat(config_classes.regions)).attr("class", config_classes.zoomRect).attr("width", $$.width).attr("height", $$.height).style("opacity", "0").on("dblclick.zoom", null), config.clipPath && $$.axis.init(), $$.updateTargets($$.data.targets), $$.updateDimension(), config.oninit.call($$), $$.redraw({
         withTransition: !1,
         withTransform: !0,
         withUpdateXDomain: !0,
@@ -1836,9 +1850,15 @@ function () {
         });
       });
     }
+    /**
+     * Update size values
+     * @param {Boolean} isInit If is called at initialization
+     * @private
+     */
+
   }, {
     key: "updateSizes",
-    value: function updateSizes() {
+    value: function updateSizes(isInit) {
       var $$ = this,
           config = $$.config,
           isRotated = config.axis_rotated,
@@ -1851,7 +1871,7 @@ function () {
           xAxisHeight = isRotated || hasArc ? 0 : $$.getHorizontalAxisHeight("x"),
           subchartXAxisHeight = config.subchart_axis_x_show && config.subchart_axis_x_tick_text_show ? xAxisHeight : 30,
           subchartHeight = config.subchart_show && !hasArc ? config.subchart_size_height + subchartXAxisHeight : 0;
-      $$.currentWidth = $$.getCurrentWidth(), $$.currentHeight = $$.getCurrentHeight(), $$.margin = isRotated ? {
+      isInit || $$.setContainerSize(), $$.margin = isRotated ? {
         top: $$.getHorizontalAxisHeight("y2") + $$.getCurrentPaddingTop(),
         right: hasArc ? 0 : $$.getCurrentPaddingRight(),
         bottom: $$.getHorizontalAxisHeight("y") + legendHeightForBottom + $$.getCurrentPaddingBottom(),
@@ -1937,13 +1957,14 @@ function () {
           main = $$.main,
           config = $$.config,
           targetsToShow = $$.filterTargetsToShow($$.data.targets),
+          initializing = options.initializing,
           flow = options.flow,
           wth = $$.getWithOption(options),
           duration = wth.Transition ? config.transition_duration : 0,
           durationForExit = wth.TransitionForExit ? duration : 0,
           durationForAxis = wth.TransitionForAxis ? duration : 0,
           transitions = transitionsValue || $$.axis.generateTransitions(durationForAxis);
-      options.initializing && config.tooltip_init_show || $$.inputType !== "touch" || $$.hideTooltip(), wth.Legend && config.legend_show ? $$.updateLegend($$.mapToIds($$.data.targets), options, transitions) : wth.Dimension && $$.updateDimension(!0), $$.redrawAxis(targetsToShow, wth, transitions, flow), $$.updateCircleY(), $$.updateXgridFocus(), config.data_empty_label_text && main.select("text.".concat(config_classes.text, ".").concat(config_classes.empty)).attr("x", $$.width / 2).attr("y", $$.height / 2).text(config.data_empty_label_text).transition().style("opacity", targetsToShow.length ? 0 : 1), $$.updateGrid(duration), $$.updateRegion(duration), $$.updateBar(durationForExit), $$.updateLine(durationForExit), $$.updateArea(durationForExit), $$.updateCircle(), $$.hasDataLabel() && $$.updateText(durationForExit), $$.redrawTitle && $$.redrawTitle(), $$.arcs && $$.redrawArc(duration, durationForExit, wth.Transform), $$.radars && $$.redrawRadar(duration, durationForExit), $$.mainText && main.selectAll(".".concat(config_classes.selectedCircles)).filter($$.isBarType.bind($$)).selectAll("circle").remove(), config.interaction_enabled && !flow && wth.EventRect && ($$.redrawEventRect(), $$.bindZoomEvent()), $$.generateRedrawList(targetsToShow, flow, duration, wth.Subchart);
+      initializing && config.tooltip_init_show || $$.inputType !== "touch" || $$.hideTooltip(), $$.updateSizes(initializing), wth.Legend && config.legend_show ? $$.updateLegend($$.mapToIds($$.data.targets), options, transitions) : wth.Dimension && $$.updateDimension(!0), $$.redrawAxis(targetsToShow, wth, transitions, flow, initializing), $$.updateCircleY(), $$.updateXgridFocus(), config.data_empty_label_text && main.select("text.".concat(config_classes.text, ".").concat(config_classes.empty)).attr("x", $$.width / 2).attr("y", $$.height / 2).text(config.data_empty_label_text).transition().style("opacity", targetsToShow.length ? 0 : 1), $$.updateGrid(duration), $$.updateRegion(duration), $$.updateBar(durationForExit), $$.updateLine(durationForExit), $$.updateArea(durationForExit), $$.updateCircle(), $$.hasDataLabel() && $$.updateText(durationForExit), $$.redrawTitle && $$.redrawTitle(), $$.arcs && $$.redrawArc(duration, durationForExit, wth.Transform), $$.radars && $$.redrawRadar(duration, durationForExit), $$.mainText && main.selectAll(".".concat(config_classes.selectedCircles)).filter($$.isBarType.bind($$)).selectAll("circle").remove(), config.interaction_enabled && !flow && wth.EventRect && ($$.redrawEventRect(), $$.bindZoomEvent()), $$.generateRedrawList(targetsToShow, flow, duration, wth.Subchart);
     }
     /**
      * Redraw axis
@@ -1956,7 +1977,7 @@ function () {
 
   }, {
     key: "redrawAxis",
-    value: function redrawAxis(targetsToShow, wth, transitions, flow) {
+    value: function redrawAxis(targetsToShow, wth, transitions, flow, isInit) {
       var tickValues,
           intervalForCulling,
           xDomainForZoom,
@@ -1978,7 +1999,7 @@ function () {
             }) ? 1 : tickCount, $$.isTimeSeriesY()));
           }
         }
-      }), $$.axis.redraw(transitions, hasArcType), $$.axis.updateLabels(wth.Transition), (wth.UpdateXDomain || wth.UpdateXAxis) && targetsToShow.length) if (config.axis_x_tick_culling && tickValues) {
+      }), $$.axis.redraw(transitions, hasArcType, isInit), $$.axis.updateLabels(wth.Transition), (wth.UpdateXDomain || wth.UpdateXAxis) && targetsToShow.length) if (config.axis_x_tick_culling && tickValues) {
         for (var i = 1; i < tickValues.length; i++) if (tickValues.length / i < config.axis_x_tick_culling_max) {
           intervalForCulling = i;
           break;
@@ -2111,7 +2132,7 @@ function () {
           options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
           $$ = this,
           config = $$.config;
-      options.withTransition = getOption(options, "withTransition", !0), options.withTransform = getOption(options, "withTransform", !1), options.withLegend = getOption(options, "withLegend", !1), options.withUpdateXDomain = !0, options.withUpdateOrgXDomain = !0, options.withTransitionForExit = !1, options.withTransitionForTransform = getOption(options, "withTransitionForTransform", options.withTransition), $$.updateSizes(), options.withLegend && config.legend_show || (transitions = $$.axis.generateTransitions(options.withTransitionForAxis ? config.transition_duration : 0), $$.updateScales(), $$.updateSvgSize(), $$.transformAll(options.withTransitionForTransform, transitions)), $$.redraw(options, transitions);
+      options.withTransition = getOption(options, "withTransition", !0), options.withTransform = getOption(options, "withTransform", !1), options.withLegend = getOption(options, "withLegend", !1), options.withUpdateXDomain = !0, options.withUpdateOrgXDomain = !0, options.withTransitionForExit = !1, options.withTransitionForTransform = getOption(options, "withTransitionForTransform", options.withTransition), options.withLegend && config.legend_show || (transitions = $$.axis.generateTransitions(options.withTransitionForAxis ? config.transition_duration : 0), $$.updateScales(), $$.updateSvgSize(), $$.transformAll(options.withTransitionForTransform, transitions)), $$.redraw(options, transitions);
     }
   }, {
     key: "redrawWithoutRescale",
@@ -2226,19 +2247,18 @@ function () {
     key: "updateSvgSize",
     value: function updateSvgSize() {
       var $$ = this,
-          isRotated = $$.config.axis_rotated,
           brush = $$.svg.select(".".concat(config_classes.brush, " .overlay")),
           brushSize = {
         width: 0,
         height: 0
       };
-      brush.size() && (brushSize.width = +brush.attr("width"), brushSize.height = +brush.attr("height")), $$.svg.attr("width", $$.currentWidth).attr("height", $$.currentHeight), $$.svg.selectAll(["#".concat($$.clipId), "#".concat($$.clipIdForGrid)]).select("rect").attr("width", $$.width).attr("height", $$.height), $$.svg.select("#".concat($$.clipIdForXAxis)).select("rect").attr("x", $$.getXAxisClipX.bind($$)).attr("y", $$.getXAxisClipY.bind($$)).attr("width", $$.getXAxisClipWidth.bind($$)).attr("height", $$.getXAxisClipHeight.bind($$)), $$.svg.select("#".concat($$.clipIdForYAxis)).select("rect").attr("x", $$.getYAxisClipX.bind($$)).attr("y", $$.getYAxisClipY.bind($$)).attr("width", $$.getYAxisClipWidth.bind($$)).attr("height", $$.getYAxisClipHeight.bind($$)), $$.svg.select("#".concat($$.clipIdForSubchart)).select("rect").attr("width", $$.width).attr("height", brushSize.height), $$.svg.select(".".concat(config_classes.zoomRect)).attr("width", $$.width).attr("height", $$.height), $$.brush && $$.brush.scale($$.subX, brushSize[isRotated ? "width" : "height"]);
+      brush.size() && (brushSize.width = +brush.attr("width"), brushSize.height = +brush.attr("height")), $$.svg.attr("width", $$.currentWidth).attr("height", $$.currentHeight), $$.svg.selectAll(["#".concat($$.clipId), "#".concat($$.clipIdForGrid)]).select("rect").attr("width", $$.width).attr("height", $$.height), $$.svg.select("#".concat($$.clipIdForXAxis)).select("rect").attr("x", $$.getXAxisClipX.bind($$)).attr("y", $$.getXAxisClipY.bind($$)).attr("width", $$.getXAxisClipWidth.bind($$)).attr("height", $$.getXAxisClipHeight.bind($$)), $$.svg.select("#".concat($$.clipIdForYAxis)).select("rect").attr("x", $$.getYAxisClipX.bind($$)).attr("y", $$.getYAxisClipY.bind($$)).attr("width", $$.getYAxisClipWidth.bind($$)).attr("height", $$.getYAxisClipHeight.bind($$)), $$.svg.select("#".concat($$.clipIdForSubchart)).select("rect").attr("width", $$.width).attr("height", brushSize.height), $$.svg.select(".".concat(config_classes.zoomRect)).attr("width", $$.width).attr("height", $$.height);
     }
   }, {
     key: "updateDimension",
     value: function updateDimension(withoutAxis) {
       var $$ = this;
-      withoutAxis || ($$.xAxis && $$.config.axis_rotated ? ($$.xAxis.create($$.axes.x), $$.subXAxis.create($$.axes.subx)) : ($$.yAxis && $$.yAxis.create($$.axes.y), $$.y2Axis && $$.y2Axis.create($$.axes.y2))), $$.updateSizes(), $$.updateScales(withoutAxis), $$.updateSvgSize(), $$.transformAll(!1);
+      withoutAxis || ($$.xAxis && $$.config.axis_rotated ? ($$.xAxis.create($$.axes.x), $$.subXAxis.create($$.axes.subx)) : ($$.yAxis && $$.yAxis.create($$.axes.y), $$.y2Axis && $$.y2Axis.create($$.axes.y2))), $$.updateScales(withoutAxis), $$.updateSvgSize(), $$.transformAll(!1);
     }
   }, {
     key: "bindResize",
@@ -4230,16 +4250,27 @@ var Options_Options = function Options() {
      * Set default extent for subchart and zoom. This can be an array or function that returns an array.
      * @name axis․x․extent
      * @memberof Options
-     * @type {Array}
+     * @type {Array|Function}
      * @default undefined
      * @example
      * axis: {
      *   x: {
-     *     // [[x0, y0], [x1, y1]], where [x0, y0] is the top-left corner and [x1, y1] is the bottom-right corner
-     *     // https://github.com/d3/d3-brush/blob/master/src/brush.js#L521
-     *     extent: [
-     *         [0, 0], [200, 60]
-     *     ]
+     *     // extent range as a pixel value
+     *     extent: [0, 200],
+     *
+     *     // when axis is 'timeseries', parsable datetime string
+     *     extent: ["2019-03-01", "2019-03-05"],
+     *
+     *     // return extent value
+     *     extent: function(domain, scale) {
+     *    	 var extent = domain.map(function(v) {
+     *     	    return scale(v);
+     *     	 });
+     *
+     *   	 // it should return a format of array
+     *   	 // ex) [0, 584]
+     *     	 return extent;
+     *     }
      *   }
      * }
      */
@@ -6174,8 +6205,9 @@ extend(ChartInternal_ChartInternal.prototype, {
     };
   },
   updateXs: function updateXs() {
-    var $$ = this;
-    $$.data.targets.length && ($$.xs = [], $$.data.targets[0].values.forEach(function (v) {
+    var $$ = this,
+        targets = $$.data.targets;
+    targets.length && ($$.xs = [], targets[0].values.forEach(function (v) {
       $$.xs[v.index] = v.x;
     }));
   },
@@ -6675,6 +6707,22 @@ var external_commonjs_d3_dsv_commonjs2_d3_dsv_amd_d3_dsv_root_d3_ = __webpack_re
 
 
 extend(ChartInternal_ChartInternal.prototype, {
+  /**
+   * Convert data according its type
+   * @param {Object} args data object
+   * @param {Function} [callback] callback for url(XHR) type loading
+   * @return {Object}
+   * @private
+   */
+  convertData: function convertData(args, callback) {
+    var data,
+        $$ = this;
+    if (args.bindto ? (data = {}, ["url", "mimeType", "headers", "keys", "json", "keys", "rows", "columns"].forEach(function (v) {
+      var key = "data_".concat(v);
+      key in args && (data[v] = args[key]);
+    })) : data = args, data.url && callback) $$.convertUrlToData(data.url, data.mimeType, data.headers, data.keys, callback);else if (data.json) data = $$.convertJsonToData(data.json, data.keys);else if (data.rows) data = $$.convertRowsToData(data.rows);else if (data.columns) data = $$.convertColumnsToData(data.columns);else if (args.bindto) throw Error("url or json or rows or columns is required.");
+    return data;
+  },
   convertUrlToData: function convertUrlToData(url) {
     var _this = this,
         mimeType = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "csv",
@@ -6878,9 +6926,9 @@ extend(ChartInternal_ChartInternal.prototype, {
         $$ = this;
     // prevent load when chart is already destroyed
     $$.config && ( // reset internally cached data
-    $$.resetCache(), args.data ? data = args.data : args.url ? $$.convertUrlToData(args.url, args.mimeType, args.headers, args.keys, function (d) {
-      $$.load($$.convertDataToTargets(d), args);
-    }) : args.json ? data = $$.convertJsonToData(args.json, args.keys) : args.rows ? data = $$.convertRowsToData(args.rows) : args.columns && (data = $$.convertColumnsToData(args.columns)), $$.load(data ? $$.convertDataToTargets(data) : null, args));
+    $$.resetCache(), data = args.data ? args.data : $$.convertData(args, function (d) {
+      return $$.load($$.convertDataToTargets(d), args);
+    }), $$.load(data ? $$.convertDataToTargets(data) : null, args));
   },
   unload: function unload(rawTargetIds, customDoneCb) {
     var $$ = this,
@@ -7253,6 +7301,14 @@ extend(ChartInternal_ChartInternal.prototype, {
 
 
 extend(ChartInternal_ChartInternal.prototype, {
+  /**
+   * Update container size
+   * @private
+   */
+  setContainerSize: function setContainerSize() {
+    var $$ = this;
+    $$.currentWidth = $$.getCurrentWidth(), $$.currentHeight = $$.getCurrentHeight();
+  },
   getCurrentWidth: function getCurrentWidth() {
     var $$ = this;
     return $$.config.size_width || $$.getParentWidth();
@@ -7286,8 +7342,7 @@ extend(ChartInternal_ChartInternal.prototype, {
   getCurrentPaddingBottom: function getCurrentPaddingBottom() {
     var $$ = this,
         config = $$.config,
-        isRotated = config.axis_rotated,
-        axisId = isRotated ? "y" : "x",
+        axisId = config.axis_rotated ? "y" : "x",
         axesLen = config["axis_".concat(axisId, "_axes")].length,
         padding = isValue(config.padding_bottom) ? config.padding_bottom : 0;
     return padding + (axesLen ? $$.getHorizontalAxisHeight(axisId) * axesLen : 0);
@@ -7609,13 +7664,21 @@ extend(ChartInternal_ChartInternal.prototype, {
           isUnderThreshold = $$.hasType("gauge") || $$.meetsArcLabelThreshold(ratio);
 
       if (isUnderThreshold) {
-        var text = ($$.getArcLabelFormat() || $$.defaultArcValueFormat)(value, ratio, id).toString();
-        if (text.indexOf("\n") === -1) node.text(text);else {
-          var multiline = text.split("\n"),
-              len = multiline.length - 1;
-          multiline.forEach(function (v, i) {
-            node.append("tspan").attr("x", 0).attr("dy", "".concat(i === 0 ? -len : 1, "em")).text(v);
+        var nodeText = node.text(),
+            text = ($$.getArcLabelFormat() || $$.defaultArcValueFormat)(value, ratio, id).toString();
+        if (text.indexOf("\n") === -1) nodeText !== text && node.text(text);else {
+          var diff = [nodeText, text].map(function (v) {
+            return v.replace(/[\s\n]/g, "");
           });
+
+          if (diff[0] !== diff[1]) {
+            var multiline = text.split("\n"),
+                len = multiline.length - 1;
+            // reset possible text
+            node.html(""), multiline.forEach(function (v, i) {
+              node.append("tspan").attr("x", 0).attr("dy", "".concat(i === 0 ? -len : 1, "em")).text(v);
+            });
+          }
         }
       }
     });
@@ -8329,7 +8392,7 @@ extend(ChartInternal_ChartInternal.prototype, {
       return (isSub ? $$.subxx : $$.xx).call($$, d);
     },
         value0 = function (d, i) {
-      return $$.isGrouped(d.id) ? getPoints(d, i)[0][1] : yScaleGetter.call($$, d.id)($$.isAreaRangeType(d) ? $$.getAreaRangeData(d, "high") : $$.getAreaBaseValue(d.id));
+      return $$.isGrouped(d.id) ? getPoints(d, i)[0][1] : yScaleGetter.call($$, d.id)($$.isAreaRangeType(d) ? $$.getAreaRangeData(d, "high") : 0);
     },
         value1 = function (d, i) {
       return $$.isGrouped(d.id) ? getPoints(d, i)[1][1] : yScaleGetter.call($$, d.id)($$.isAreaRangeType(d) ? $$.getAreaRangeData(d, "low") : d.value);
@@ -8350,9 +8413,6 @@ extend(ChartInternal_ChartInternal.prototype, {
 
       return path || "M 0 0";
     };
-  },
-  getAreaBaseValue: function getAreaBaseValue() {
-    return 0;
   },
   generateGetAreaPoints: function generateGetAreaPoints(areaIndices, isSub) {
     // partial duplication of generateGetBarPoints
@@ -9451,7 +9511,7 @@ extend(ChartInternal_ChartInternal.prototype, {
     for (var i = 0, len = d.length; i < len; i++) if ((row = d[i]) && (getRowValue(row) || getRowValue(row) === 0)) {
       if (!text) {
         var title = sanitise(titleFormat ? titleFormat(row.x) : row.x);
-        text = "<table class=\"".concat($$.CLASS.tooltip, "\">").concat(isValue(title) ? "<tr><th colspan=\"2\">".concat(title, "</th></tr>") : "");
+        text = "<table class=\"".concat(config_classes.tooltip, "\">").concat(isValue(title) ? "<tr><th colspan=\"2\">".concat(title, "</th></tr>") : "");
       }
 
       if (param = [row.ratio, row.id, row.index, d], value = sanitise(valueFormat.apply(void 0, [getRowValue(row)].concat(toConsumableArray_default()(param)))), $$.isAreaRangeType(row)) {
@@ -9470,7 +9530,7 @@ extend(ChartInternal_ChartInternal.prototype, {
         if (row.name === null) continue;
         var name = sanitise(nameFormat.apply(void 0, [row.name].concat(toConsumableArray_default()(param)))),
             bgcolor = getBgColor(row);
-        text += "<tr class=\"".concat($$.CLASS.tooltipName).concat($$.getTargetSelectorSuffix(row.id), "\"><td class=\"name\">"), text += $$.patterns ? "<svg><rect style=\"fill:".concat(bgcolor, "\" width=\"10\" height=\"10\"></rect></svg>") : "<span style=\"background-color:".concat(bgcolor, "\"></span>"), text += "".concat(name, "</td><td class=\"value\">").concat(value, "</td></tr>");
+        text += "<tr class=\"".concat(config_classes.tooltipName).concat($$.getTargetSelectorSuffix(row.id), "\"><td class=\"name\">"), text += $$.patterns ? "<svg><rect style=\"fill:".concat(bgcolor, "\" width=\"10\" height=\"10\"></rect></svg>") : "<span style=\"background-color:".concat(bgcolor, "\"></span>"), text += "".concat(name, "</td><td class=\"value\">").concat(value, "</td></tr>");
       }
     }
 
@@ -9633,7 +9693,7 @@ extend(ChartInternal_ChartInternal.prototype, {
     };
     // Update size and scale
     // Update g positions
-    optionz.withTransition = getOption(optionz, "withTransition", !0), optionz.withTransitionForTransform = getOption(optionz, "withTransitionForTransform", !0), config.legend_contents_bindto && config.legend_contents_template ? $$.updateLegendTemplate() : $$.updateLegendElement(targetIds || $$.mapToIds($$.data.targets), optionz, transitions), $$.updateSizes(), $$.updateScales(), $$.updateSvgSize(), $$.transformAll(optionz.withTransitionForTransform, transitions), $$.legendHasRendered = !0;
+    optionz.withTransition = getOption(optionz, "withTransition", !0), optionz.withTransitionForTransform = getOption(optionz, "withTransitionForTransform", !0), config.legend_contents_bindto && config.legend_contents_template ? $$.updateLegendTemplate() : $$.updateLegendElement(targetIds || $$.mapToIds($$.data.targets), optionz, transitions), $$.updateScales(), $$.updateSvgSize(), $$.transformAll(optionz.withTransitionForTransform, transitions), $$.legendHasRendered = !0;
   },
 
   /**
@@ -10021,6 +10081,7 @@ extend(ChartInternal_ChartInternal.prototype, {
  */
 
 
+
 /**
  * Get the text position
  * @param {String} pos right, left or center
@@ -10047,7 +10108,7 @@ extend(ChartInternal_ChartInternal.prototype, {
 
     if ($$.config.title_text) {
       $$.title = $$.svg.append("g");
-      var text = $$.title.append("text").style("text-anchor", getTextPos($$.config.title_position)).attr("class", $$.CLASS.title);
+      var text = $$.title.append("text").style("text-anchor", getTextPos($$.config.title_position)).attr("class", config_classes.title);
       $$.config.title_text.split("\n").forEach(function (v, i) {
         text.append("tspan").attr("x", 0).attr("dy", "".concat(i ? "1.5" : ".3", "em")).text(v);
       });
@@ -10077,7 +10138,7 @@ extend(ChartInternal_ChartInternal.prototype, {
         $$ = this,
         config = $$.config,
         position = config.title_position || "left";
-    return /(right|center)/.test(position) ? (x = $$.currentWidth - $$.getTextRect($$.title, $$.CLASS.title).width, position.indexOf("right") >= 0 ? x -= config.title_padding.right || 0 : position.indexOf("center") >= 0 && (x /= 2)) : x = config.title_padding.left || 0, x;
+    return /(right|center)/.test(position) ? (x = $$.currentWidth - $$.getTextRect($$.title, config_classes.title).width, position.indexOf("right") >= 0 ? x -= config.title_padding.right || 0 : position.indexOf("center") >= 0 && (x /= 2)) : x = config.title_padding.left || 0, x;
   },
 
   /**
@@ -10087,7 +10148,7 @@ extend(ChartInternal_ChartInternal.prototype, {
    */
   yForTitle: function yForTitle() {
     var $$ = this;
-    return ($$.config.title_padding.top || 0) + $$.getTextRect($$.title, $$.CLASS.title).height;
+    return ($$.config.title_padding.top || 0) + $$.getTextRect($$.title, config_classes.title).height;
   },
 
   /**
@@ -10108,6 +10169,12 @@ extend(ChartInternal_ChartInternal.prototype, {
 
 
 extend(ChartInternal_ChartInternal.prototype, {
+  initClip: function initClip() {
+    var $$ = this; // MEMO: clipId needs to be unique because it conflicts when multiple charts exist
+
+    // Define 'clip-path' attribute values
+    $$.clipId = "".concat($$.datetimeId, "-clip"), $$.clipIdForXAxis = "".concat($$.clipId, "-xaxis"), $$.clipIdForYAxis = "".concat($$.clipId, "-yaxis"), $$.clipIdForGrid = "".concat($$.clipId, "-grid"), $$.clipPath = $$.getClipPath($$.clipId), $$.clipPathForXAxis = $$.getClipPath($$.clipIdForXAxis), $$.clipPathForYAxis = $$.getClipPath($$.clipIdForYAxis), $$.clipPathForGrid = $$.getClipPath($$.clipIdForGrid);
+  },
   getClipPath: function getClipPath(id) {
     var $$ = this,
         config = $$.config;
@@ -10499,6 +10566,14 @@ extend(ChartInternal_ChartInternal.prototype, {
         timeout,
         brushHandler = function () {
       $$.redrawForBrush();
+    },
+        getBrushSize = function () {
+      var brush = $$.svg.select(".".concat(config_classes.brush, " .overlay")),
+          brushSize = {
+        width: 0,
+        height: 0
+      };
+      return brush.size() && (brushSize.width = +brush.attr("width"), brushSize.height = +brush.attr("height")), brushSize[isRotated ? "width" : "height"];
     };
 
     // set the brush extent
@@ -10519,12 +10594,15 @@ extend(ChartInternal_ChartInternal.prototype, {
       return extent[1].filter(function (v) {
         return isNaN(v);
       }).length === 0 && $$.context && $$.context.select(".".concat(config_classes.brush)).call(this), this;
-    }, $$.brush.scale = function (scale, height) {
-      var extent = [[0, 0]];
+    }, $$.brush.scale = function (scale) {
+      var h = config.subchart_size_height || getBrushSize(),
+          extent = $$.getExtent();
       // [[x0, y0], [x1, y1]], where [x0, y0] is the top-left corner and [x1, y1] is the bottom-right corner
       // when extent updates, brush selection also be re-applied
       // https://github.com/d3/d3/issues/2918
-      scale.range ? extent.push([scale.range()[1], height || config.subchart_size_height]) : scale.constructor === Array && extent.push(scale), isRotated && extent[1].reverse(), this.extent(config.axis_x_extent || extent), this.update();
+      !extent && scale.range ? extent = [[0, 0], [scale.range()[1], h]] : isArray(extent) && (extent = extent.map(function (v, i) {
+        return [v, i > 0 ? h : i];
+      })), isRotated && extent[1].reverse(), this.extent(extent), this.update();
     }, $$.brush.getSelection = function () {
       return $$.context ? $$.context.select(".".concat(config_classes.brush)) : Object(external_commonjs_d3_selection_commonjs2_d3_selection_amd_d3_selection_root_d3_["select"])([]);
     };
@@ -10694,15 +10772,16 @@ extend(ChartInternal_ChartInternal.prototype, {
   },
 
   /**
-   * Get default extent
+   * Get extent value
    * @private
    * @returns {Array} default extent
    */
-  getDefaultExtent: function getDefaultExtent() {
+  getExtent: function getExtent() {
     var $$ = this,
-        config = $$.config,
-        extent = isFunction(config.axis_x_extent) ? config.axis_x_extent($$.getXDomain($$.data.targets)) : config.axis_x_extent;
-    return $$.isTimeSeries() && (extent = [$$.parseDate(extent[0]), $$.parseDate(extent[1])]), extent;
+        extent = $$.config.axis_x_extent;
+    return extent && (isFunction(extent) ? extent = extent($$.getXDomain($$.data.targets), $$.subX) : $$.isTimeSeries() && extent.every(isNaN) && (extent = extent.map(function (v) {
+      return $$.subX($$.parseDate(v));
+    }))), extent;
   }
 });
 // EXTERNAL MODULE: external {"commonjs":"d3-zoom","commonjs2":"d3-zoom","amd":"d3-zoom","root":"d3"}
@@ -10728,7 +10807,7 @@ extend(ChartInternal_ChartInternal.prototype, {
    */
   initZoom: function initZoom() {
     var $$ = this;
-    $$.zoomScale = null, $$.generateZoom();
+    $$.zoomScale = null, $$.generateZoom(), $$.initZoomBehaviour();
   },
 
   /**
@@ -10994,7 +11073,7 @@ extend(ChartInternal_ChartInternal.prototype, {
     return notEmpty(threshold) ? function (value) {
       var color = colors[colors.length - 1];
 
-      for (var v, i = 0; i < values.length; i++) if (v = asValue ? value : value * 100 / max, v < values[i]) {
+      for (var v, val, i = 0; val = values[i]; i++) if (v = asValue ? value : value * 100 / max, v < val) {
         color = colors[i];
         break;
       }
@@ -11150,7 +11229,6 @@ extend(ChartInternal_ChartInternal.prototype, {
 
 
 extend(ChartInternal_ChartInternal.prototype, {
-  CLASS: config_classes,
   generateClass: function generateClass(prefix, targetId) {
     return " ".concat(prefix, " ").concat(prefix + this.getTargetSelectorSuffix(targetId));
   },
@@ -11544,7 +11622,7 @@ extend(api_zoom_zoom, {
         enableType = enabled;
     enabled && (enableType = isString(enabled) && /^(drag|wheel)$/.test(enabled) ? {
       type: enabled
-    } : enabled), config.zoom_enabled = enableType, $$.zoom ? enabled === !1 && $$.bindZoomEvent(!1) : ($$.initZoom(), $$.initZoomBehaviour(), $$.bindZoomEvent()), $$.updateAndRedraw();
+    } : enabled), config.zoom_enabled = enableType, $$.zoom ? enabled === !1 && $$.bindZoomEvent(!1) : ($$.initZoom(), $$.bindZoomEvent()), $$.updateAndRedraw();
   },
 
   /**
@@ -11819,7 +11897,7 @@ extend(Chart_Chart.prototype, {
         orgDataCount = $$.getMaxDataCount(),
         length = 0,
         tail = 0;
-    if (args.json) data = $$.convertJsonToData(args.json, args.keys);else if (args.rows) data = $$.convertRowsToData(args.rows);else if (args.columns) data = $$.convertColumnsToData(args.columns);else return;
+    if (args.json || args.rows || args.columns) data = $$.convertData(args);else return;
     var targets = $$.convertDataToTargets(data, !0); // Update/Add data
 
     $$.data.targets.forEach(function (t) {
@@ -11869,7 +11947,7 @@ extend(Chart_Chart.prototype, {
     // Redraw with new targets
     isDefined(args.to) ? (length = 0, to = $$.isTimeSeries() ? $$.parseDate(args.to) : args.to, baseTarget.values.forEach(function (v) {
       v.x < to && length++;
-    })) : isDefined(args.length) && (length = args.length), orgDataCount ? orgDataCount === 1 && $$.isTimeSeries() && (diff = (baseTarget.values[baseTarget.values.length - 1].x - baseValue.x) / 2, domain = [new Date(+baseValue.x - diff), new Date(+baseValue.x + diff)], $$.updateXDomain(null, !0, !0, !1, domain)) : (diff = $$.isTimeSeries() ? baseTarget.values.length > 1 ? baseTarget.values[baseTarget.values.length - 1].x - baseValue.x : baseValue.x - $$.getXDomain($$.data.targets)[0] : 1, domain = [baseValue.x - diff, baseValue.x], $$.updateXDomain(null, !0, !0, !1, domain)), $$.updateTargets($$.data.targets), $$.redraw({
+    })) : isDefined(args.length) && (length = args.length), orgDataCount ? orgDataCount === 1 && $$.isTimeSeries() && (diff = (baseTarget.values[baseTarget.values.length - 1].x - baseValue.x) / 2, domain = [new Date(+baseValue.x - diff), new Date(+baseValue.x + diff)]) : (diff = $$.isTimeSeries() ? baseTarget.values.length > 1 ? baseTarget.values[baseTarget.values.length - 1].x - baseValue.x : baseValue.x - $$.getXDomain($$.data.targets)[0] : 1, domain = [baseValue.x - diff, baseValue.x]), domain && $$.updateXDomain(null, !0, !0, !1, domain), $$.updateTargets($$.data.targets), $$.redraw({
       flow: {
         index: baseValue.index,
         length: length,
@@ -12962,7 +13040,7 @@ extend(Chart_Chart.prototype, {
   flush: function flush(soft, isFromResize) {
     var $$ = this.internal; // reset possible zoom scale
 
-    isFromResize && $$.brush && $$.brush.updateResize(), $$.zoomScale = null, soft ? $$.redraw({
+    isFromResize ? $$.brush && $$.brush.updateResize() : $$.axis && $$.axis.setOrient(), $$.zoomScale = null, soft ? $$.redraw({
       withTransform: !0,
       withUpdateXDomain: !0,
       withUpdateOrgXDomain: !0,
@@ -13016,7 +13094,7 @@ extend(Chart_Chart.prototype, {
     var res,
         $$ = this.internal,
         key = name && name.replace(/\./g, "_");
-    return key in $$.config && (isDefined(value) ? ($$.config[key] = value, res = value, redraw && this.flush(!0)) : res = $$.config[key]), res;
+    return key in $$.config && (isDefined(value) ? ($$.config[key] = value, res = value, redraw && this.flush()) : res = $$.config[key]), res;
   }
 });
 // CONCATENATED MODULE: ./src/api/api.tooltip.js
@@ -13293,7 +13371,7 @@ var billboard = __webpack_require__(24);
 
 /**
  * @namespace bb
- * @version 1.7.1-nightly-20190308100115
+ * @version 1.8.0-nightly-20190315100419
  */
 
 var bb = {
@@ -13304,7 +13382,7 @@ var bb = {
    *    bb.version;  // "1.0.0"
    * @memberof bb
    */
-  version: "1.7.1-nightly-20190308100115",
+  version: "1.8.0-nightly-20190315100419",
 
   /**
    * Generate chart
